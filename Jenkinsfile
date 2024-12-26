@@ -9,7 +9,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Checking out code...'
-                checkout scm
+                git url:'https://github.com/sivas-git/nodejs-app', branch:'main'
             }
         }
         stage('Build Docker Image') {
@@ -30,7 +30,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
+       /* stage('Deploy') {
             steps {
                 echo 'Deploying application via SSH...'
                 sshagent(['ssh-credentials-id']) {
@@ -44,7 +44,7 @@ pipeline {
                     '''
                 }
            }
-       }
+       } */
     }
     post {
         success {
