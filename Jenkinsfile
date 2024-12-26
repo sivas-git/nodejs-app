@@ -1,30 +1,57 @@
 pipeline {
-    agent any 
-    
-    stages{
-        stage('Checkout'){
+    agent any
+    environment {
+        DOCKER_REGISTRY = 'siva3r' // Replace 
+        DOCKER_IMAGE = 'nodejs-app'
+        DOCKER_TAG = 'latest'
+    }
+    stages {
+        stage('Checkout') {
             steps {
-                git url: 'https://github.com/sivas-git/nodejs-app.git', branch: 'main'
+                echo 'Checking out code...'
+                checkout scm
             }
         }
-        stage('Build Docker Image'){
+        stage('Build Docker Image') {
             steps {
-                sh 'docker build -t siva3r/nodejs-app:latest' 
-            }
-        }
-        stage('Login and Push Image'){
-            steps {
-                echo 'logging in to docker hub and pushing image..'
-                withCredentials([usernamePassword(credentialsId:'dockerHub',passwordVariable:'dockerHubPassword', usernameVariable:'dockerHubUser')]) {
-                    sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
-                    sh "docker push siva3r/nodejs.app:latest"
+                echo 'Building Docker image...'
+                script {
+                    docker.build("${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}")
                 }
             }
         }
-        stage('Deploy'){
+        stage('Push Docker Image') {
             steps {
-                sh 'docker-compose down && docker-compose up -d'
+                echo 'Pushing Docker image to the registry...'
+                script {
+                    docker.withRegistry('https://hub.docker.com/repository/create?namespace=siva3r', 'docker-hub') {
+                        docker.image("${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                    }
+                }
             }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying application via SSH...'
+                sshagent(['ssh-credentials-id']) {
+                    sh '''
+                    ssh root@0.0.0.0 "
+                        docker pull siva3r/nodejs-app:latest &&
+                        docker stop nodejs || true &&
+                        docker rm nodejs || true &&
+                        docker run -d --name nodejs r -p 80:80 siva3r/nodejs-app:latest
+                    "
+                    '''
+                }
+           }
+       }
+    }
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
