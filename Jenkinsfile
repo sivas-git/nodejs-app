@@ -35,7 +35,7 @@ pipeline {
                 echo 'Deploying application via SSH...'
                 sshagent(['ssh-id']) {
                     sh '''
-                    ssh ubuntu@18.212.84.49 "
+                    ssh jenkins@18.212.84.49 "
                         docker pull siva3r/nodejs-app:latest &&
                         docker stop nodejs || true &&
                         docker rm nodejs || true &&
