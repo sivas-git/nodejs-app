@@ -30,12 +30,12 @@ pipeline {
                 }
             }
         }
-       /* stage('Deploy') {
+        stage('Deploy') {
             steps {
                 echo 'Deploying application via SSH...'
-                sshagent(['ssh-credentials-id']) {
+                sshagent(['ssh-id']) {
                     sh '''
-                    ssh root@0.0.0.0 "
+                    ssh ubuntu@18.212.84.49 "
                         docker pull siva3r/nodejs-app:latest &&
                         docker stop nodejs || true &&
                         docker rm nodejs || true &&
@@ -44,7 +44,7 @@ pipeline {
                     '''
                 }
            }
-       } */
+       } 
     }
     post {
         success {
