@@ -33,7 +33,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying application via SSH...'
-                sshagent(['ssh-id']) {
+                /* sshagent(['ssh-id']) {
                     sh '''
                     ssh ubuntu@18.212.84.49 "
                         docker pull siva3r/nodejs-app:latest &&
@@ -42,7 +42,7 @@ pipeline {
                         docker run -d --name nodejs r -p 80:80 siva3r/nodejs-app:latest
                     "
                     '''
-                }
+                }*/
            }
        } 
     }
