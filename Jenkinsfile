@@ -4,6 +4,7 @@ pipeline {
         DOCKER_REGISTRY = 'siva3r' // Replace 
         DOCKER_IMAGE = 'nodejs-app'
         DOCKER_TAG = 'latest'
+        REGISTRY_URL = 'docker.io'
     }
     stages {
         stage('Checkout') {
@@ -14,19 +15,20 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                echo 'Building Docker image...'
                 script {
-                    docker.build("${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}")
+                    echo 'Building Docker image: ${DOCKER_IMAGE}:${DOCKER_TAG}'
+                    sh 'docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} .'
                 }
             }
         }
         stage('Push Docker Image') {
             steps {
-                echo 'Pushing Docker image to the registry...'
                 script {
-                    docker.withRegistry('https://hub.docker.com/repository/create?namespace=siva3r', 'docker-hub') {
-                        docker.image("${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}").push()
-                    }
+                    echo "Logging in to Docker registry..."
+                    sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin ${REGISTRY_URL}"
+                    
+                    echo "Pushing Docker image to registry..."
+                    sh "docker push ${REGISTRY_URL}/${DOCKER_IMAGE}:${DOCKER_TAG}"
                 }
             }
         }
